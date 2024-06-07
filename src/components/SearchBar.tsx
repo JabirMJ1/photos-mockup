@@ -2,12 +2,35 @@
 
 import { IMAGE_TYPES } from "@/constants";
 import { TOption } from "@/types/components/types";
+import { debounce } from "lodash";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { FaCamera, FaRegImage, FaSearch } from "react-icons/fa"
 import ReactSelect, {components, OptionProps, ValueContainerProps} from "react-select"
 import { ValueContainer } from "react-select/animated";
 
-const SearchBar = () => {
-    const handleSearchTypeChange = (val: TOption) => {}
+type MyProps = {
+    search?: string
+}
+
+const SearchBar = ({search}: MyProps) => {
+    const router = useRouter()
+  
+    const [query, setQuery] = useState(search)
+
+    const handleSearch = (val: string) => {
+        if (!val) {
+        router.push(`/`)
+      } else {
+        router.push(`/?query=${val}`)
+      }
+    }
+
+    const debouncedSearch = debounce(useCallback((val) => handleSearch(val), []), 400)
+  
+    useEffect(() => {
+        debouncedSearch(query)
+    }, [query])
 
     const { Option, ValueContainer } = components;
     const IconOption = (optionData: OptionProps<TOption>) => (
@@ -32,10 +55,9 @@ const SearchBar = () => {
         <div className="flex h-12 border bg-white">
             <ReactSelect
                 options={IMAGE_TYPES} 
-                defaultValue={
+                value={
                     IMAGE_TYPES.find(val => val.value === undefined) ?? { value: "All", label: 'All', selected: true }
                 } 
-                onChange={(val: any) => handleSearchTypeChange(val)} 
                 isSearchable={false} 
                 className="z-50 text-xs font-bold w-full max-w-full border-r"
                 components={{ Option: IconOption, ValueContainer: IconValueContainer}}
@@ -66,7 +88,7 @@ const SearchBar = () => {
             />
             <div className="px-4 flex space-x-4 items-center flex-grow">
                 <FaSearch className='text-lg'/>
-                <input type="search" placeholder="Cars flying ..." className="text-sm"/>
+                <input value={query} type="search" onChange={(e) => setQuery(e.target.value)} placeholder="Cars flying ..." className="text-sm flex-grow h-full px-2 focus:outline-none"/>
             </div>
             <button type="button" className="h-full min-w-32 flex items-center space-x-2 border-l px-4 w-max">
                 <FaCamera className="min-w-max text-lg"/><span className='min-w-max'>Search by image</span>

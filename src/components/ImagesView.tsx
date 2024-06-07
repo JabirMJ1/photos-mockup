@@ -6,23 +6,37 @@ import Image from "next/image"
 import { useCallback, useEffect, useState } from "react"
 import { BsCart2, BsDownload, BsImages, BsPlusCircle } from "react-icons/bs"
 import Link from 'next/link'
+import { useInView } from "react-intersection-observer"
+import { getImages } from "@/app/actions"
+import { toast } from "react-toastify"
+import { FaSpinner } from "react-icons/fa"
 
 type TImagesViewProps = {
-    images: TImage[]
+    data: {
+        page: number;
+        per_page: number;
+        photos: TImage[];
+        total_results: number;
+        next_page: string;
+    }
+    query: string
 }
 
-const ImagesView = ({images}: TImagesViewProps) => {
+const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
     const [perRow, setPerRow] = useState(0)
     const [windowWidth, setWindowWidth] = useState<number>(0)
+    const [images, setImages] = useState<TImage[]>(photos)
+    const [data, setData] = useState(rest)
+    const [ref, inView] = useInView()
+    const [page, setPage] = useState<number>(1)
 
     const imageGroups: TImage[][] = [];
     
-    if(perRow) [...Array(Math.ceil(images.length / perRow))].forEach((_, key) => {
+    if(perRow && images.length) [...Array(Math.ceil(images.length / perRow))].forEach((_, key) => {
         imageGroups.push(images.slice((key * perRow), (key * perRow) + perRow)) 
     })
 
     const setResponsivePerRow = () => {
-        console.log("resizing")
         if(window.innerWidth < 640) return setPerRow(1)
         if(window.innerWidth < 768) return setPerRow(2)
         if(window.innerWidth < 1024) return setPerRow(3)
@@ -39,9 +53,38 @@ const ImagesView = ({images}: TImagesViewProps) => {
         }
     }, [])
 
+    const loadMoreImages = async () => {
+            const nextPage = page + 1
+            // check if more images are present
+            try{
+                console.log(nextPage)
+                const nextImages = await getImages(nextPage, 'car')
+                setPage(nextPage)
+                if(nextImages?.photos) setImages(prev => {
+                    return ([
+                        ...(prev?.length ? prev : []),
+                        ...nextImages?.photos
+                    ])
+                })
+            }
+            catch(err: any){
+                toast.error(err.message ?? "unknown error")
+            }
+    }
+
+    useEffect(() => {
+        if(inView) {
+            loadMoreImages()
+        }
+    }, [inView])
+
+    useEffect(() => {
+        setImages(photos)
+    }, [data, query])
+
     return (
-        <div className="bg-white space-y-2 p-3">
-            <h1 className="font-bold text-sm">Cars Stock Photos and Images </h1>
+        <div className="bg-white space-y-2 p-3 shadow-lg">
+            <h1 className="font-bold text-sm">{query} Stock Photos and Images <span className="text-gray-600 text-xs">({data.total_results})</span></h1>
             {
                 imageGroups.map((imageGroup, key) => {
                     // adjust images to match in height and accumalated width to match screen width
@@ -70,7 +113,7 @@ const ImagesView = ({images}: TImagesViewProps) => {
                                                 </Link>
                                             </div>
 
-                                            <div className="flex justify-end space-x-2 ">
+                                            <div className="flex justify-end space-x-2 flex-wrap">
                                                 <Link href={image.url} target="_blank" className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsCart2 className="text-lg"/></Link>
                                                 <Link download target="_blank" href={image.src[IMAGE_SIZES.ORIGINAL]} className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsDownload className="text-lg"/></Link>
                                                 <button className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsPlusCircle className="text-lg"/></button>
@@ -82,7 +125,6 @@ const ImagesView = ({images}: TImagesViewProps) => {
                                             width={newWidths[key1]}
                                             height={maxHeight}
                                             alt={image.alt}
-                                            sizes=""
                                         />
                                     </div>
                             })
@@ -90,6 +132,12 @@ const ImagesView = ({images}: TImagesViewProps) => {
                     </div>
                 }                    
                 )
+            }
+            {
+                data.total_results > (page * 12) &&
+                <div ref={ref} className="flex items-center justify-between h-28">
+                    <FaSpinner className="animate-spin text-xl m-auto" />
+                </div>
             }
         </div>
     )

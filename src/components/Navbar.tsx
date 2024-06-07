@@ -10,7 +10,7 @@ const Navbar = () => {
         <ul className="flex items-center space-x-2">
         <BorderlessButton className="text-white flex items-center space-x-2"><BsHeart className="text-lg"/> <span>Sign in</span></BorderlessButton>
         <BorderlessButton className="text-white flex items-center space-x-2"><BsCart3 className="text-lg"/> <span>Sign in</span></BorderlessButton>
-        <BorderedButton className="text-white">Sign in</BorderedButton>
+        <BorderedButton className="text-white border-white">Sign in</BorderedButton>
         </ul>
     </nav>
   )
