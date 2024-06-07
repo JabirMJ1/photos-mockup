@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
 import { getImages } from "./actions";
 import { ToastContainer } from "react-toastify";
+import { CartContextProvider } from "@/components/context/CartContext";
 
 export default async function Home({
   searchParams
@@ -16,7 +17,8 @@ export default async function Home({
   const query = typeof searchParams?.query === "string" ? searchParams.query : undefined
   const initialImagesData = query && await getImages(1, query)
 
-  if(!query || !initialImagesData) return <main className="text-xs bg-gray-100 min-h-screen font-sans  flex flex-col justify-between">
+   
+    if(!query || !initialImagesData) return  <CartContextProvider><main className="text-xs bg-gray-100 min-h-screen font-sans  flex flex-col justify-between">
     <Navbar/>
     <div className="flex flex-col flex-grow items-center justify-center">
       <SearchBar/>
@@ -29,29 +31,32 @@ export default async function Home({
         <p className="text-white font-normal">Changing the world one image at a time.</p>
     </div>
   </main>
+  </CartContextProvider>
 
   return (
-    <main className="text-xs bg-gray-100 min-h-screen font-sans flex flex-col">
-      <Navbar/>
+    <CartContextProvider>
+      <main className="text-xs bg-gray-100 min-h-screen font-sans flex flex-col">
+        <Navbar/>
 
-      <SearchBar search={query}/>
+        <SearchBar search={query}/>
 
-      <ImageTypesHeader/>
+        <ImageTypesHeader/>
 
-      <ImagesView data={initialImagesData} query={query}/>
-      <p className="py-2 px-4">Search Results for {query} Stock Photos and Images ({initialImagesData.total_results})</p>
-
-
-      <div className="align-end"> 
-          <p className="mt-10 p-5 bg-green-300 text-base font-bold text-center">366,681,625 stock photos, 360&deg; panaromic images, vectors and videos</p>
-          <div className="p-6 bg-black text-base font-bold text-center space-y-3">
-            <h3 className="text-2xl font-bold text-white">My Image Search</h3>
-            <p className="text-white font-normal">Changing the world one image at a time.</p>
-          </div>
-      </div>
+        <ImagesView data={initialImagesData} query={query}/>
+        <p className="py-2 px-4">Search Results for {query} Stock Photos and Images ({initialImagesData.total_results})</p>
 
 
-      <ToastContainer/>
-    </main>
+        <div className="align-end"> 
+            <p className="mt-10 p-5 bg-green-300 text-base font-bold text-center">366,681,625 stock photos, 360&deg; panaromic images, vectors and videos</p>
+            <div className="p-6 bg-black text-base font-bold text-center space-y-3">
+              <h3 className="text-2xl font-bold text-white">My Image Search</h3>
+              <p className="text-white font-normal">Changing the world one image at a time.</p>
+            </div>
+        </div>
+
+
+        <ToastContainer/>
+      </main>
+    </CartContextProvider>
   );
 }

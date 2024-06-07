@@ -4,12 +4,13 @@ import { IMAGE_SIZES } from "@/constants"
 import { TImage } from "@/types/components/types"
 import Image from "next/image"
 import { useCallback, useEffect, useState } from "react"
-import { BsCart2, BsDownload, BsImages, BsPlusCircle } from "react-icons/bs"
+import { BsCart2, BsCartX, BsDownload, BsImages, BsPlusCircle } from "react-icons/bs"
 import Link from 'next/link'
 import { useInView } from "react-intersection-observer"
 import { getImages } from "@/app/actions"
 import { toast } from "react-toastify"
 import { FaSpinner } from "react-icons/fa"
+import { useCartContext } from "./context/CartContext"
 
 type TImagesViewProps = {
     data: {
@@ -23,6 +24,8 @@ type TImagesViewProps = {
 }
 
 const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
+    const {cart, addImageToCart, removeImageFromCart, findImageIndex} = useCartContext()
+
     const [perRow, setPerRow] = useState(0)
     const [windowWidth, setWindowWidth] = useState<number>(0)
     const [images, setImages] = useState<TImage[]>(photos)
@@ -123,17 +126,43 @@ const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
                                             </div>
 
                                             <div className="flex justify-end space-x-2 flex-wrap">
-                                                <button type = "button" className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsCart2 className="text-lg"/></button>
-                                                <Link download target="_blank" href={image.src[IMAGE_SIZES.ORIGINAL]} className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsDownload className="text-lg"/></Link>
-                                                <button className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsPlusCircle className="text-lg"/></button>
-                                                <button className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsImages className="text-lg"/></button>
+                                                {
+                                                    findImageIndex(cart, image) === -1 ? 
+                                                        <button 
+                                                        onClick={() => addImageToCart(image)}
+                                                        type = "button" 
+                                                        className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3">
+                                                            <BsCart2 className="text-lg"/>
+                                                    </button>
+                                                    :
+                                                    <button 
+                                                        onClick={() => removeImageFromCart(image)}
+                                                        type = "button" 
+                                                        className="text-white bg-black bg-opacity-90 hover:bg-red-400 hover:text-black hover:bg-opacity-100 rounded p-3">
+                                                            <BsCartX className="text-lg"/>
+                                                    </button>
+                                                    }
+                                                <Link 
+                                                download 
+                                                target="_blank" 
+                                                href={image.src[IMAGE_SIZES.ORIGINAL]} 
+                                                className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3">
+                                                    <BsDownload className="text-lg"/>
+                                                </Link>
+                                                <button className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3">
+                                                    <BsPlusCircle className="text-lg"/>
+                                                </button>
+                                                <button className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3">
+                                                    <BsImages className="text-lg"/>
+                                                </button>
                                             </div>
                                         </div>
                                         <Image
-                                            src = {image.src[IMAGE_SIZES.ORIGINAL]}
+                                            src = {windowWidth === 0 ? image.src[IMAGE_SIZES.SMALL] : image.src[IMAGE_SIZES.ORIGINAL]}
                                             width={newWidths[key1]}
                                             height={maxHeight}
                                             alt={image.alt}
+                                            quality={25}
                                         />
                                     </div>
                             })

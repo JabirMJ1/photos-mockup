@@ -43,7 +43,7 @@ const SearchBar = ({search}: MyProps) => {
         return(
             <ValueContainer {...optionData}>
                 <div className="flex space-x-2 items-center">
-                    <FaRegImage className="text-lg"/>
+                    <FaRegImage className="text-lg hidden sm:block"/>
                     <span>{optionData.getValue()[0].label}</span>
                     <span>images</span>
                 </div>
@@ -90,8 +90,8 @@ const SearchBar = ({search}: MyProps) => {
                 <FaSearch className='text-lg'/>
                 <input value={query} type="search" onChange={(e) => setQuery(e.target.value)} placeholder="Cars flying ..." className="text-sm flex-grow h-full px-2 focus:outline-none"/>
             </div>
-            <button type="button" className="h-full min-w-32 flex items-center space-x-2 border-l px-4 w-max">
-                <FaCamera className="min-w-max text-lg"/><span className='min-w-max'>Search by image</span>
+            <button type="button" className="h-full flex items-center space-x-2 border-l px-4 w-max">
+                <FaCamera className="min-w-max text-lg"/><span className='min-w-max hidden sm:block'>Search by image</span>
             </button>
         </div>
     )
