@@ -97,7 +97,6 @@ const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
                     let newWidths = imageGroup.map((image, key) => aspectRations[key] * maxHeight)
 
                     if(newWidths.length < perRow) [...Array(perRow - newWidths.length)].map(() => newWidths.push(newWidths[0]))
-                    console.log(newWidths, ...[...Array(perRow - newWidths.length)].map(() => newWidths[0]))
 
                     const totalWidth = newWidths.reduce((acc, width) => width, 0)
 
