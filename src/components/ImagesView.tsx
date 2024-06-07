@@ -31,12 +31,14 @@ const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
     const [page, setPage] = useState<number>(1)
 
     const imageGroups: TImage[][] = [];
-    
+
+    // images are divided into groups as per window width for easier management
     if(perRow && images.length) [...Array(Math.ceil(images.length / perRow))].forEach((_, key) => {
         imageGroups.push(images.slice((key * perRow), (key * perRow) + perRow)) 
     })
 
     const setResponsivePerRow = () => {
+        // image per row change based on window resize
         if(window.innerWidth < 640) return setPerRow(1)
         if(window.innerWidth < 768) return setPerRow(2)
         if(window.innerWidth < 1024) return setPerRow(3)
@@ -53,11 +55,11 @@ const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
         }
     }, [])
 
-    const loadMoreImages = async () => {
+    useEffect(() => {
+        const loadMoreImages = async () => {
             const nextPage = page + 1
             // check if more images are present
             try{
-                console.log(nextPage)
                 const nextImages = await getImages(nextPage, 'car')
                 setPage(nextPage)
                 if(nextImages?.photos) setImages(prev => {
@@ -70,9 +72,8 @@ const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
             catch(err: any){
                 toast.error(err.message ?? "unknown error")
             }
-    }
+        }
 
-    useEffect(() => {
         if(inView) {
             loadMoreImages()
         }
@@ -80,17 +81,21 @@ const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
 
     useEffect(() => {
         setImages(photos)
-    }, [data, query])
+    }, [query, data, photos])
 
     return (
-        <div className="bg-white space-y-2 p-3 shadow-lg">
+        <div className="bg-white space-y-2 p-3 shadow-lg flex-grow">
             <h1 className="font-bold text-sm">{query} Stock Photos and Images <span className="text-gray-600 text-xs">({data.total_results})</span></h1>
             {
                 imageGroups.map((imageGroup, key) => {
-                    // adjust images to match in height and accumalated width to match screen width
+                    // adjust images to match in height and aggregated width to match screen width
                     let maxHeight = Math.max(...imageGroup.map((image) => image.height))
                     const aspectRations = imageGroup.map((image) => image.width / image.height)
                     let newWidths = imageGroup.map((image, key) => aspectRations[key] * maxHeight)
+
+                    if(newWidths.length < perRow) [...Array(perRow - newWidths.length)].map(() => newWidths.push(newWidths[0]))
+                    console.log(newWidths, ...[...Array(perRow - newWidths.length)].map(() => newWidths[0]))
+
                     const totalWidth = newWidths.reduce((acc, width) => width, 0)
 
                     if(totalWidth !== windowWidth){
@@ -99,10 +104,14 @@ const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
                         maxHeight = maxHeight * scalingFactor
                     }
 
-                    return <div key={key} className="relative flex space-x-2">
+                    return <div key={key} className={`relative flex space-x-2`}>
                         {
-                            imageGroup.map((image, key1) => {
-                                return <div key = {key1} className="relative flex-grow group" title={image.alt}>
+                            [...Array(perRow)].map((_, key1) => {
+                                const image = imageGroup[key1]
+
+                                if(!image) return <div key={key1} style={{width: newWidths[key1]}}></div>
+
+                                return <div key = {key1} className="relative group" title={image.alt}>
                                         <div className="absolute z-10 w-full h-full bg-black bg-opacity-20 hidden group-hover:flex p-2 flex-col justify-between">
                                             <div>
                                                 <Link href={image.photographer_url} target="_blank">
@@ -114,7 +123,7 @@ const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
                                             </div>
 
                                             <div className="flex justify-end space-x-2 flex-wrap">
-                                                <Link href={image.url} target="_blank" className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsCart2 className="text-lg"/></Link>
+                                                <button type = "button" className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsCart2 className="text-lg"/></button>
                                                 <Link download target="_blank" href={image.src[IMAGE_SIZES.ORIGINAL]} className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsDownload className="text-lg"/></Link>
                                                 <button className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsPlusCircle className="text-lg"/></button>
                                                 <button className="text-white bg-black bg-opacity-90 hover:bg-green-400 hover:text-black hover:bg-opacity-100 rounded p-3"><BsImages className="text-lg"/></button>

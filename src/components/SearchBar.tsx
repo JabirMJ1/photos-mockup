@@ -52,7 +52,7 @@ const SearchBar = ({search}: MyProps) => {
     };
     
     return (
-        <div className="flex h-12 border bg-white">
+        <div className="flex h-12 border bg-white max-w-screen overflow-hidden">
             <ReactSelect
                 options={IMAGE_TYPES} 
                 value={
