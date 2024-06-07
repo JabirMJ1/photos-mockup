@@ -64,7 +64,7 @@ const Navbar = () => {
                       <Image
                           src = {image.src[IMAGE_SIZES.SMALL]}
                           alt={image.alt}
-                          quality={10}
+                          quality={25}
                           width={image.width}
                           height={image.height}
                           className="object-cover"

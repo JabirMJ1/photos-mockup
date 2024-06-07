@@ -13,7 +13,7 @@ import { FaSpinner } from "react-icons/fa"
 import { useCartContext } from "./context/CartContext"
 
 type TImagesViewProps = {
-    data: {
+    initialData: {
         page: number;
         per_page: number;
         photos: TImage[];
@@ -23,13 +23,13 @@ type TImagesViewProps = {
     query: string
 }
 
-const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
+const ImagesView = ({initialData, query}: TImagesViewProps) => {
     const {cart, addImageToCart, removeImageFromCart, findImageIndex} = useCartContext()
 
     const [perRow, setPerRow] = useState(0)
     const [windowWidth, setWindowWidth] = useState<number>(0)
-    const [images, setImages] = useState<TImage[]>(photos)
-    const [data, setData] = useState(rest)
+    const [images, setImages] = useState<TImage[]>(initialData.photos)
+    const [data, setData] = useState(initialData)
     const [ref, inView] = useInView()
     const [page, setPage] = useState<number>(1)
 
@@ -83,8 +83,9 @@ const ImagesView = ({data: {photos, ...rest}, query}: TImagesViewProps) => {
     }, [inView])
 
     useEffect(() => {
-        setImages(photos)
-    }, [query, data, photos])
+        setImages(initialData.photos)
+        setData(initialData)
+    }, [query, initialData])
 
     return (
         <div className="bg-white space-y-2 p-3 shadow-lg flex-grow">
