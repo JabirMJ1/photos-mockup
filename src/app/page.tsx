@@ -42,7 +42,7 @@ export default async function Home({
 
         <ImageTypesHeader/>
 
-        <ImagesView data={initialImagesData} query={query}/>
+        <ImagesView initialData={initialImagesData} query={query}/>
         <p className="py-2 px-4">Search Results for {query} Stock Photos and Images ({initialImagesData.total_results})</p>
 
 
